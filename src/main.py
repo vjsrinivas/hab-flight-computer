@@ -1,5 +1,7 @@
 from backend import *
 
-print("Starting up flight computer")
-
 sweetprince = FlightComputer()
+hi = "fasf"
+data_ex = DataBlock()
+#sweetprince.print(hi)
+sweetprince.print(data_ex)
