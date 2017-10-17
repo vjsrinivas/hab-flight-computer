@@ -1,6 +1,6 @@
 import time
 #TODO: Enable sense_hat when on production
-#from sense_hat import SenseHat
+from sense_hat import SenseHat
 import sys
 import calendar
 import threading
@@ -95,10 +95,10 @@ class FlightComputer():
             raise TypeError('__data__ was some type other than backend.DataBlock. __data__ is currently a {0}'.format(type(__data__)))
     
     def collect(self, sense):
-        _data_ = new DataBlock()
+        _data_ = DataBlock()
         
         try:
-            continue
+            pass
             _data_.humidity = sense.get_humidity()
             _data_.temp_cal_h = sense.get_temperature_from_humidity()
             _data_.temp_cal_p = sense.get_temperature_from_pressure()
@@ -110,10 +110,10 @@ class FlightComputer():
             _data_.magneto = sense.get_compass()
             _data_.gyro = sense.get_gyroscope
             _data_.accel = sense.get_accelerometer
-
+            return _data_
         except Exception as e:
             print(e)
-        return -_data_
+        return _data_
 
     def job(self):
         
