@@ -1,12 +1,14 @@
 import time
 #TODO: Enable sense_hat when on production
-from sense_hat import SenseHat
+#from sense_hat import SenseHat
+#NB: only use sense_emu for emulation testing
+#from sense_emu import SenseHat
 import sys
 import calendar
 import threading
 
 class DataBlock(object):
-    __slots__ = ('time','temp_raw', 'temp_cal_h', 'temp_cal_p', 'humidity', 'pressure', 'orientation', 'magneto_raw','magneto')
+    __slots__ = ('time','temp_raw', 'temp_cal_h', 'temp_cal_p', 'humidity', 'pressure', 'orientation', 'magneto_raw','magneto', 'gyro', 'accel')
 
     def __init__(self):
         #TODO: fix calendar formatting for file write
@@ -71,6 +73,7 @@ class FlightComputer():
                 print("pressure: %s" % __data__.pressure)
                 print("orientation: %s" % __data__.orientation)
                 print("magentometer: %s" % __data__.magneto)
+                #TODO: Add gyro and accel outputs to writing and output
             except (RuntimeError, NameError, ValueError) as e:
                 print(e)
         else:
@@ -98,7 +101,8 @@ class FlightComputer():
         _data_ = DataBlock()
         
         try:
-            pass
+            #TODO: Remove pass
+            #pass
             _data_.humidity = sense.get_humidity()
             _data_.temp_cal_h = sense.get_temperature_from_humidity()
             _data_.temp_cal_p = sense.get_temperature_from_pressure()
@@ -108,8 +112,8 @@ class FlightComputer():
             _data_.orientation = sense.get_orientation()
             _data_.magneto_raw = sense.get_compass_raw()
             _data_.magneto = sense.get_compass()
-            _data_.gyro = sense.get_gyroscope
-            _data_.accel = sense.get_accelerometer
+            _data_.gyro = sense.get_gyroscope()
+            _data_.accel = sense.get_accelerometer()
             return _data_
         except Exception as e:
             print(e)
@@ -121,7 +125,7 @@ class FlightComputer():
 
         with open(obj_name, 'w+') as file:
             while(True):
-                self.write(file, self.collect())
+                self.write(file, self.collect(self.sense_parent))
                 #TODO: Temporary statment below
                 time.sleep(1)
         return 0
