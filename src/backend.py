@@ -50,6 +50,52 @@ class RBStatus(object):
             time.sleep(self.interval)
         
 
+class RBCamera(object):
+    """ Threading example class
+    The run() method will be started and it will run in the background
+    until the application exits.
+    """
+
+    def __init__(self, interval=1):
+        """ Constructor
+        :type interval: int
+        :param interval: Check interval, in seconds
+        """
+        self.interval = interval
+
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+        """ Method that runs forever """
+        while True:
+            from picamera import PiCamera
+            camera = PiCamera()
+            camera.resolution = (1920,1080)
+            camera.start_preview()
+            time.sleep(self.interval)
+            camera.capture('test1.jpg')
+        '''
+        #testing
+        while true:
+            from msvcrt import getch 
+            from picamera import PiCamera
+            camera = PiCamera(resolution=(1640,922))
+            camera.start_recording('test.h264')
+            camera.wait_recording(5)
+            key = 0
+            counter = 1;
+            #27 is esc key
+            while key != 27:
+                key = ord(getch())
+                camera.split_recording('test%d.h264' % counter)
+                camera.wait_recording(5)
+                counter += 1
+            camera.stop_recording()
+            break
+        '''
+
 class FlightComputer():
 
     session_time = calendar.timegm(time.gmtime())
@@ -72,9 +118,10 @@ class FlightComputer():
                 print("humidity: %s" % __data__.humidity)
                 print("pressure: %s" % __data__.pressure)
                 print("orientation: %s" % __data__.orientation)
-                print("magentometer: %s" % __data__.magneto)
+                print("magnetometer: %s" % __data__.magneto)
+                print("\n")
                 #TODO: Add gyro and accel outputs to writing and output
-            except (RuntimeError, NameError, ValueError) as e:
+            except (RuntimeError, NameError, ValueError, KeyboardInterrupt) as e:
                 print(e)
         else:
             raise TypeError('__data__ was some type other than backend.FlightComputer. __data__ is currently a {0}'.format(type(__data__)))
@@ -84,15 +131,19 @@ class FlightComputer():
             try:
                 #TODO: Convert to JSON format
                 self.print(__data__)
-                file.write("%s\n" % __data__.time)
-                file.write("temperature: %s\n" % __data__.temp_raw)
-                file.write("temperature (computed from humidity): %s\n" % __data__.temp_cal_h)
-                file.write("temperature (computer from pressure): %s\n" % __data__.temp_cal_p)
-                file.write("humidity: %s\n" % __data__.humidity)
-                file.write("pressure: %s\n" % __data__.pressure)
-                file.write("orientation: %s\n" % __data__.orientation)
-                file.write("magentometer: %s\n" % __data__.magneto)
+                file.write("\"%s\":[\n" % __data__.time)
+                file.write("\"temp\": %s,\n" % __data__.temp_raw)
+                file.write("\"temp_h\": %s,\n" % __data__.temp_cal_h)
+                file.write("\"temp_p\": %s,\n" % __data__.temp_cal_p)
+                file.write("\"humidity\": %s,\n" % __data__.humidity)
+                file.write("\"pressure\": %s,\n" % __data__.pressure)
+                file.write("\"orientation\": %s,\n" % __data__.orientation)
+                file.write("\"magneto\": %s,\n" % __data__.magneto)
+                file.write("]\n")
+                #file.write()
             except Exception as e:
+                print("T")
+                self.json_setup(file, isEnd = 1)
                 print(e)
         else:
             raise TypeError('__data__ was some type other than backend.DataBlock. __data__ is currently a {0}'.format(type(__data__)))
@@ -124,8 +175,25 @@ class FlightComputer():
         obj_name = "_session_{0}.txt".format(self.session_time)
 
         with open(obj_name, 'w+') as file:
+            self.json_setup(file)
             while(True):
                 self.write(file, self.collect(self.sense_parent))
                 #TODO: Temporary statment below
                 time.sleep(1)
         return 0
+    
+    def json_setup(self, file, isEnd = 0):
+        if(isEnd == 0):
+            try:
+                file.write("{\n")
+                file.write("\"data\":{")
+            except (RuntimeError, NameError, ValueError, KeyboardInterrupt) as e:
+                print(e)
+        elif(isEnd == 1):
+            try:
+                file.write("},\n")
+                file.write("\"meta\": {\n")
+                file.write("}\n")
+                file.write("}\n")
+            except (RuntimeError, NameError, ValueError, KeyboardInterrupt) as e: 
+                print(e)
