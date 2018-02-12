@@ -69,13 +69,22 @@ class RBCamera(object):
 
     def run(self):
         """ Method that runs forever """
-        while True:
-            from picamera import PiCamera
-            camera = PiCamera()
+        from picamera import PiCamera
+        i = 0
+        with PiCamera() as camera:
+            filename = "test1{0}.h264".format(calendar.timegm(time.gmtime()))
             camera.resolution = (1920,1080)
-            camera.start_preview()
-            time.sleep(self.interval)
-            camera.capture('test1.jpg')
+            camera.start_recording(filename)
+            camera.wait_recording(5)
+            while(True):
+                try:
+                    filename = "test1{0}.h264".format(calendar.timegm(time.gmtime()))
+                    camera.split_recording(filename)
+                    camera.wait_recording(5)
+                except Exception:
+                    #camera.stop_preview()
+                    camera.stop_recording()
+                    camera.close()
         '''
         #testing
         while true:
@@ -100,6 +109,7 @@ class FlightComputer():
 
     session_time = calendar.timegm(time.gmtime())
     raspberry_status = RBStatus(interval=100)
+    raspberry_camera = RBCamera(interval=5)
     sense_parent = SenseHat()
     
     def __init__(self):
