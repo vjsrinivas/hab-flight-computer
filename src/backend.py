@@ -38,7 +38,6 @@ class RBStatus(object):
         :param interval: Check interval, in seconds
         """
         self.interval = interval
-
         thread = threading.Thread(target=self.run, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start()                                  # Start the execution
@@ -72,38 +71,21 @@ class RBCamera(object):
         from picamera import PiCamera
         i = 0
         with PiCamera() as camera:
+            #Code segement setups video stream/first split of the stream
             filename = "test1{0}.h264".format(calendar.timegm(time.gmtime()))
             camera.resolution = (1920,1080)
             camera.start_recording(filename)
             camera.wait_recording(5)
+            
+            #records 5-second videos
             while(True):
                 try:
                     filename = "test1{0}.h264".format(calendar.timegm(time.gmtime()))
                     camera.split_recording(filename)
                     camera.wait_recording(5)
                 except Exception:
-                    #camera.stop_preview()
                     camera.stop_recording()
                     camera.close()
-        '''
-        #testing
-        while true:
-            from msvcrt import getch 
-            from picamera import PiCamera
-            camera = PiCamera(resolution=(1640,922))
-            camera.start_recording('test.h264')
-            camera.wait_recording(5)
-            key = 0
-            counter = 1;
-            #27 is esc key
-            while key != 27:
-                key = ord(getch())
-                camera.split_recording('test%d.h264' % counter)
-                camera.wait_recording(5)
-                counter += 1
-            camera.stop_recording()
-            break
-        '''
 
 class FlightComputer():
 
