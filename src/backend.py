@@ -25,30 +25,6 @@ class DataBlock(object):
         self.gyro = {}
         self.accel = {}
 
-#Taken from: http://sebastiandahlgren.se/2014/06/27/running-a-method-as-a-background-thread-in-python/
-class RBStatus(object):
-    """ Threading example class
-    The run() method will be started and it will run in the background
-    until the application exits.
-    """
-
-    def __init__(self, interval=1):
-        """ Constructor
-        :type interval: int
-        :param interval: Check interval, in seconds
-        """
-        self.interval = interval
-        thread = threading.Thread(target=self.run, args=())
-        thread.daemon = True                            # Daemonize thread
-        thread.start()                                  # Start the execution
-
-    def run(self):
-        """ Method that runs forever """
-        while True:
-            # Get status update
-            time.sleep(self.interval)
-        
-
 class RBCamera(object):
     """ Threading example class
     The run() method will be started and it will run in the background
@@ -119,6 +95,7 @@ class FlightComputer():
             raise TypeError('__data__ was some type other than backend.FlightComputer. __data__ is currently a {0}'.format(type(__data__)))
 
     def write(self, file, __data__):        
+        #Split files up to prevent corruption
         if(type(__data__) == DataBlock):
             try:
                 #TODO: Convert to JSON format

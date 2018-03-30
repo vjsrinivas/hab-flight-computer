@@ -1,4 +1,0 @@
-s.set_pixels([nothing for i in range(64)]) <-- to reset the rgb
-s.set_pixel(0,0,red) <-- setting errors
-red = (255, 0, 0)
-s.low_light = True
