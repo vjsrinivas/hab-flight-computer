@@ -94,13 +94,14 @@ class FlightComputer():
         else:
             raise TypeError('__data__ was some type other than backend.FlightComputer. __data__ is currently a {0}'.format(type(__data__)))
 
-    def write(self, file, __data__):        
+    def write(self, file, __data__, TRACK = 0):        
         #Split files up to prevent corruption
         if(type(__data__) == DataBlock):
             try:
                 #TODO: Convert to JSON format
                 self.print(__data__)
                 file.write("\"%s\":[\n" % __data__.time)
+                file.write("\"child\": %s,\n", TRACK)
                 file.write("\"temp\": %s,\n" % __data__.temp_raw)
                 file.write("\"temp_h\": %s,\n" % __data__.temp_cal_h)
                 file.write("\"temp_p\": %s,\n" % __data__.temp_cal_p)
@@ -140,15 +141,20 @@ class FlightComputer():
         return _data_
 
     def job(self):
-        
-        obj_name = "_session_{0}.txt".format(self.session_time)
-
-        with open(obj_name, 'w+') as file:
-            self.json_setup(file)
-            while(True):
-                self.write(file, self.collect(self.sense_parent))
-                #TODO: Temporary statment below
-                time.sleep(1)
+        num_of_children = 0
+        while(True):
+            obj_name = "_session_{0}.txt".format(self.session_time)
+            split_time = 0
+            with open(obj_name, 'w+') as file:
+                self.json_setup(file)
+                while(True):
+                    if(split_time == 1000):
+                        num_of_children += 1
+                        break
+                    self.write(file, self.collect(self.sense_parent), num_of_children)
+                    split_time += 1
+                    #TODO: Temporary statment below
+                    time.sleep(1)
         return 0
     
     def json_setup(self, file, isEnd = 0):
